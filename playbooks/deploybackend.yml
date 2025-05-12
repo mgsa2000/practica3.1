@@ -1,0 +1,40 @@
+--- 
+- name: Playbook para configurar HTTPS
+  hosts: backend
+  become: yes
+
+  vars_files:
+    - ../vars/variables.yml
+
+  tasks:
+    - name: Quitamos la base de datos
+      mysql_db:
+        name: "{{ moodle.db.name }}"
+        state: absent
+        login_user: root
+        login_unix_socket: /var/run/mysqld/mysqld.sock
+
+    - name: Creamos la base de datos
+      mysql_db:
+        name: "{{ moodle.db.name }}"
+        state: present
+        login_user: root
+        login_unix_socket: /var/run/mysqld/mysqld.sock
+
+    - name: Quitamos el usuario si esiste
+      mysql_user:
+        name: "{{ moodle.db.user }}"
+        host: "{{ frontend_ip }}"
+        state: absent
+        login_user: root
+        login_unix_socket: /var/run/mysqld/mysqld.sock
+
+    - name: Creamos el usuario
+      mysql_user:
+        name: "{{ moodle.db.user }}"
+        password: "{{ moodle.db.password }}"
+        host: "{{ frontend_ip }}"
+        priv: "{{ moodle.db.name }}.*:ALL"
+        state: present
+        login_user: root
+        login_unix_socket: /var/run/mysqld/mysqld.sock

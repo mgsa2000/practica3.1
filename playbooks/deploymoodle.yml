@@ -1,0 +1,100 @@
+--- 
+- name: Playbook para configurar HTTPS
+  hosts: frontend
+  become: yes
+
+  vars_files:
+    - ../vars/variables.yml
+
+  tasks:
+    - name: Quitamos el contenido de dentro de la carpeta
+      command: rm -rf /var/www/html/*
+
+    - name: Instalamos los paquetes necesarios
+      apt:
+        name:
+          - wget
+          - unzip
+          - php
+        state: present
+    
+    - name: Download Moodle repository
+      get_url:
+        url: "https://github.com/moodle/moodle/archive/refs/tags/v4.3.1.zip"
+        dest: "/var/www/html/v4.3.1.zip"
+
+    - name: Install unzip
+      apt:
+        name: unzip
+        state: present
+
+    - name: Extract Moodle files
+      unarchive:
+        src: "/var/www/html/v4.3.1.zip"
+        dest: "/var/www/"
+        remote_src: yes
+
+    - name:
+      copy:
+        src: /var/www/moodle-4.3.1/
+        dest: /var/www/html/
+        remote_src: yes
+        mode: 775
+
+    - name: Ponemos permisos a la carpeta html
+      file:
+        path: /var/www/html/
+        owner: root
+        group: root
+        mode: '0755'
+        recurse: yes
+    
+    - name: Set permissions for /var/moodledata
+      file:
+        path: /var/moodledata
+        owner: www-data
+        group: www-data
+        mode: '0755'
+        recurse: yes
+
+    - name: Copiamos nuestro htaccess a la carpeta de moodledata
+      copy:
+        src: "../htaccess/.htaccess"
+        dest: "/var/moodledata/.htaccess"
+
+    - name: Modify max_input_vars in PHP config
+      replace:
+        path: /etc/php/8.3/cli/php.ini
+        regexp: ";max_input_vars = 1000"
+        replace: "max_input_vars = 5000"
+        
+    - name: Install Moodle via CLI
+      command: >
+        php /var/www/html/admin/cli/install.php
+        --wwwroot="https://{{ certbot.domain }}"
+        --dataroot={{ moodle.data }}
+        --dbname={{ moodle.db.name }}
+        --dbuser={{ moodle.db.user }}
+        --dbpass={{ moodle.db.password }}
+        --dbhost={{ backend_ip }}
+        --fullname="{{ moodle.FullName }}"
+        --shortname={{ moodle.ShortName }}
+        --adminuser={{ moodle.Admin.user }}
+        --adminpass={{ moodle.Admin.pass }}
+        --non-interactive
+        --agree-license
+        --lang=es
+        --adminemail={{ moodle.Admin.Email }}
+        --summary="{{ moodle.summary }}"
+        --dbtype={{ moodle.db.type }}
+
+    - name: le damos permisos a la carpeta html de nuevo
+      file:
+        path: /var/www/html/
+        mode: '0755'
+        recurse: yes
+
+    - name: Restart Apache
+      systemd:
+        name: apache2
+        state: restarted

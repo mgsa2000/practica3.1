@@ -1,0 +1,26 @@
+frontend_ip: "172.31.23.134"
+backend_ip: "172.31.28.44"
+
+certbot:
+  email: "stratachan4@gmail.com"
+  domain: "miguel.zapto.org"
+
+moodle:
+  directory: "/var/www/html"
+  data: "/var/www/moodledata"
+  summary: "sumario"
+  db:
+    name: "miguel"
+    user: "miguel"
+    password: "miguel"
+    type: "mysqli"
+  FullName: "Miguel Strachan"
+  ShortName: "Miguel"
+  Admin:
+    user: "miguel"
+    pass: "miguel"
+    Email: "stratachan4@gmail.com"
+
+  
+phpmyadmin:
+  phppassword: "miguel"

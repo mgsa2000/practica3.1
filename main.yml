@@ -1,0 +1,6 @@
+---
+- import_playbook: playbooks/install_lamp_backend.yml
+- import_playbook: playbooks/deploybackend.yml
+#- import_playbook: playbooks/install_lamp_frontend.yml
+#- import_playbook: playbooks/setup_letsencrypt_https.yml
+- import_playbook: playbooks/deploymoodle.yml

@@ -1,0 +1,73 @@
+--- 
+- name: Playbook para configurar HTTPS
+  hosts: frontend
+  become: yes
+
+  vars_files:
+    - ../vars/variables.yml
+
+  tasks:
+    - name: Actualizamos los repositorios
+      apt:
+        update_cache: yes
+
+    - name: Actualizamos el ubuntu
+      apt:
+        upgrade: yes
+
+    - name: Instalamos apache2 
+      apt:
+        name: apache2
+        state: present
+    - name:
+      apache2_module:
+        name: rewrite
+        state: present
+
+    - name: Copiamos el 000-default dentro de apache2
+      copy:
+        src:  ../templates/000-default.conf
+        dest: /etc/apache2/sites-available
+
+    - name: Instalamos los modulos de php
+      apt:
+        name:
+          - php 
+          - libapache2-mod-php 
+          - php-mysql 
+          - php-cli 
+          - php-xml 
+          - php-curl 
+          - php-soap 
+          - php-gd 
+          - php-intl 
+          - php-mbstring 
+          - php-zip 
+          - unzip
+        state: present
+        
+    - name:
+      service:
+        name: apache2
+        state: restarted
+
+    - name:
+      file:
+        path: /var/www/html
+        mode: 755
+        owner: www-data
+        group: www-data
+        recurse: yes
+        
+    - name: Borramos la carpeta moodledata si existe
+      file:
+        path: /var/moodledata
+        state: absent
+
+    - name: "Creamos la carpeta moodledata"
+      file:
+        path: /var/moodledata
+        state: directory
+        mode: 0777
+        owner: www-data
+        group: www-data

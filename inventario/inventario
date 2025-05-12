@@ -1,0 +1,13 @@
+[frontend]
+52.201.167.129
+
+
+[backend]
+
+52.202.138.209
+
+
+[all:vars]
+ansible_user=ubuntu
+ansible_ssh_private_key_file=/home/ubuntu/recuperacion.pem
+ansible_ssh_common_args='-o StrictHostKeyChecking=accept-new'

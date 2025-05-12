@@ -1,0 +1,33 @@
+--- 
+- name: Playbook para configurar HTTPS
+  hosts: backend
+  become: yes
+
+  vars_files:
+    - ../vars/variables.yml
+
+  tasks:
+    - name: Actualizamos los repositorios
+      apt:
+        update_cache: yes
+
+    - name: Instalamos mysql-server
+      apt:
+        name: mysql-server
+        state: present
+
+    - name: Instalamos el modulo de python para mysql-server
+      apt:
+        name: python3-pymysql
+        state: present
+
+    - name: Configuramos el /etc/mysql
+      replace:
+        path: /etc/mysql/mysql.conf.d/mysqld.cnf
+        regexp: 127.0.0.1
+        replace: 0.0.0.0
+
+    - name: Reseteamos mysql-server
+      service:
+        name: mysql
+        state: restarted
